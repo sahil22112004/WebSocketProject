@@ -1,43 +1,33 @@
-// import { MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-// import {Socket,Server} from 'socket.io'
- 
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 
-// @WebSocketGateway(3002,{})
-// export class chatGateWay implements OnGatewayConnection,OnGatewayDisconnect{
+@WebSocketGateway(3002, {
+  cors: { origin: '*' },
+})
+export class ChatGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
+  @WebSocketServer()
+  server: Server;
 
-//     @WebSocketServer() 
-//     server: Server;
+  handleConnection(client: Socket) {
+    console.log('User connected:', client.id);
 
-//     handleConnection(client: Socket) {
-//         console.log('new User connected ',client.id);
+    this.server.emit('user_joined', {
+      message: `User joined: ${client.id}`,
+    });
+  }
 
-//         // client.broadcast.emit('user-joined',{
-//         //     message:`user Joined the chat : ${client.id}`
-//         // })
+  handleDisconnect(client: Socket) {
+    console.log('User disconnected:', client.id);
 
-        
-//         this.server.emit('user-joined',{
-//             message:`user Joined the chat : ${client.id} `
-//         })
-//     }
-
-//     handleDisconnect(client: Socket) {
-//         console.log('User disconnected ',client.id)
-//         this.server.emit('user-left',{
-//             message:`user left the chat : ${client.id}`
-//         })
-//     }
-        
-    
-
-
-//     @SubscribeMessage('newMessage')
-//     handleNewMessage(client:Socket ,message:any ){
-//         console.log(message)
-
-//         client.emit('reply','This is replay')
-
-//         this.server.emit('reply','brodcasting...')
-
-//     }
-// }
+    this.server.emit('user_left', {
+      message: `User left: ${client.id}`,
+    });
+  }
+}

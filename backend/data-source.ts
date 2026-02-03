@@ -16,7 +16,7 @@ const datasource :DataSourceOptions & SeederOptions={
   host: 'localhost',
   port: 5432,
   username: 'postgres',
-  password: 'admin',
+  password: '1104',
   database: 'websocket',
   entities: [User],
   migrations: ['src/migrations/*.ts'],

@@ -1,92 +1,81 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/auth.entity';
-// import { updatebanAuthdto } from './dto/update-banAUth.dto';
+import { JwtService } from '@nestjs/jwt';
+import { CreateAuthDto } from './dto/create-auth.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    private jwtService: JwtService,
   ) {}
 
+  async authenticate(email: string ,password:string) {
+    const user = await this.userRepo.findOne({ where: { email } });
 
-   async validateUser(email:string,password:string ){  
-    // Replace with database validation  
-    // if (username === 'test' && password === 'password') {  
-    //   return { id: 1, username: 'test' };  
-    // }  
-    // return null; 
-    const existing = await this.userRepo.findOne({where:{email}})
-    console.log("existing")
-    if (existing){
-       return existing
+    if (!user) return null;
+
+    if (user.isBanned) {
+      throw new HttpException('This account is banned ,Contact admin', 403);
     }
-    console.log('in this block')
-    // if(existing.isBanned){
-    //   console.log('this block work')
-    //   throw new HttpException('This account is banned ,Contact admin',403)
-    // }
-     
-    return null;
-    
-  }  
 
-  async create(createAuthDto: CreateAuthDto) {
-    const {email,username}= createAuthDto
-    console.log("serv",createAuthDto)
-
-    const existing = await this.userRepo.findOne({where:{email}})
-    console.log("existing",existing)
-    if (!existing){
-      const newUser = this.userRepo.create(createAuthDto);
-      await this.userRepo.save(newUser);
-      return {message:'register succesfully',user:newUser} 
-    }
-    if(existing.isBanned){
-      throw new HttpException('This account is banned ,Contact admin',403)
-    }
-    return {message:'already existed',user:existing}
-
+    return user;
   }
 
-  async login(createAuthDto: CreateAuthDto){
-    const {email}= createAuthDto
-    const existing = await this.userRepo.findOne({where:{email}})
-    console.log(existing)
-    if (!existing){
-       throw new HttpException('User Not Existed',404)
-    }
-    // if(existing.isBanned){
-    //   console.log('this block work')
-    //   throw new HttpException('This account is banned ,Contact admin',403)
-    // }
-    return existing
+  async login(user: User, req: any, res: any) {
+    const payload = {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+    };
 
+    const token = this.jwtService.sign(payload);
+
+    req.session.user = user;
+
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+
+    return {
+      message: 'Login successful',
+      user,
+    };
+  }
+
+  async create(createAuthDto: CreateAuthDto) {
+    const existing = await this.userRepo.findOne({
+      where: { email: createAuthDto.email },
+    });
+
+    if (!existing) {
+      const user = this.userRepo.create(createAuthDto);
+      await this.userRepo.save(user);
+      return { message: 'register succesfully', user };
+    }
+
+    if (existing.isBanned) {
+      throw new HttpException('This account is banned ,Contact admin', 403);
+    }
+
+    return { message: 'already existed', user: existing };
   }
 
   findAll() {
     return this.userRepo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  findOne(id: any) {
+    return this.userRepo.findOne({ where: { id } });
   }
 
-  // async update(id: string, updateAuthDto: updatebanAuthdto) {
-  //   const {isBanned} = updateAuthDto
-  //   const res = await this.userRepo.update(id,{isBanned})
-  //   return {message:'succesfully update the ban'};
-  // }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
-
-  validating(){
-    return "hello"
+  remove(id: string) {
+    return this.userRepo.delete(id);
   }
 }

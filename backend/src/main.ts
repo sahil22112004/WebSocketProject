@@ -2,19 +2,25 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import session from 'express-session';
 import passport from 'passport'
+import cookieParser from 'cookie-parser';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+});
+app.use(cookieParser());
 
-  // Apply middleware *before* the application starts listening
   app.use(
     session({
       secret: 'yourSecretKey',
       resave: false,
       saveUninitialized: false,
       cookie: {
-        maxAge: 10000 , // 1 minute session duration
-        secure: process.env.NODE_ENV === 'production', // Set to true in production with HTTPS
+        maxAge: 600000 , 
+        secure: process.env.NODE_ENV === 'production',
       },
     }),
   );
@@ -22,7 +28,6 @@ async function bootstrap() {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Start the server
   await app.listen(process.env.PORT ?? 4000);
 }
 

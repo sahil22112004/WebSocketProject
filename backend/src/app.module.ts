@@ -13,7 +13,7 @@ import { User } from './auth/entities/auth.entity';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'admin',
+      password: '1104',
       database: 'websocket',
       entities: [User],
       synchronize: false,
