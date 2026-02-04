@@ -1,12 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import type { AppDispatch, RootState } from '../redux/store'
-import { io, Socket } from 'socket.io-client'
-import { apiGetProfile } from '../services/authApi'
 import { fetchProfile, logout } from '../redux/slice/authSlice'
 import { useRouter } from 'next/navigation'
+import { io, Socket } from 'socket.io-client'
 
 let socket: Socket
 
@@ -14,32 +13,59 @@ function Dashboard() {
   const { currentUser, isLoggedIn } = useSelector(
     (state: RootState) => state.auth
   )
+  console.log("current user is ",currentUser)
+
   const dispatch = useDispatch<AppDispatch>()
   const router = useRouter()
 
-  const [notifications, setNotifications] = useState<string[]>([])
+  const [code, setCode] = useState('')
+  const [showCodeInput, setShowCodeInput] = useState(false)
+  const [info, setInfo] = useState('')
 
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(fetchProfile())
-  },[])
+  }, [])
 
   useEffect(() => {
     if (!isLoggedIn || !currentUser) return
 
     socket = io('http://localhost:3002')
+    console.log(currentUser.id)
 
-    socket.on('user_joined', (data) => {
-      setNotifications((prev) => [...prev, data.message])
+    socket.emit('login', currentUser.id)
+
+    socket.on('login_success', () => {
+      setInfo('Logged in successfully')
+      setShowCodeInput(false)
     })
 
-    socket.on('user_left', (data) => {
-      setNotifications((prev) => [...prev, data.message])
+    socket.on('login_blocked', () => {
+      setInfo('Already logged in on 2 devices. Enter takeover code.')
+      setShowCodeInput(true)
+    })
+
+    socket.on('takeover_requested', (data) => {
+      setInfo(`Takeover code: ${data.code}`)
+    })
+
+    socket.on('force_logout', () => {
+      dispatch(logout())
+      socket.disconnect()
+      router.push('/auth/login')
     })
 
     return () => {
       socket.disconnect()
     }
   }, [isLoggedIn, currentUser])
+
+  const submitCode = () => {
+    console.log(code)
+    socket.emit('submit_code', {
+      userId: currentUser?.id,
+      code,
+    })
+  }
 
   if (!isLoggedIn || !currentUser) {
     return (
@@ -62,17 +88,26 @@ function Dashboard() {
           fontSize: '14px',
         }}
       >
-        {JSON.stringify(currentUser, null, 2)}
+        {JSON.stringify(currentUser)}
       </pre>
 
       <div style={{ marginTop: '1rem' }}>
-        <h3>Notifications</h3>
-        {notifications.map((n, i) => (
-          <div key={i}>{n}</div>
-        ))}
+        <p>{info}</p>
+
+        {showCodeInput && (
+          <>
+            <input
+              placeholder="Enter 4-digit code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
+            <button onClick={submitCode}>Submit Code</button>
+          </>
+        )}
       </div>
     </div>
   )
 }
 
 export default Dashboard
+

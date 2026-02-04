@@ -5,6 +5,7 @@ import { ChatModule } from './chat/chat.module';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './auth/entities/auth.entity';
+import { UserSessions } from './chat/entities/chat.entity';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { User } from './auth/entities/auth.entity';
       username: 'postgres',
       password: 'admin',
       database: 'websocket',
-      entities: [User],
+      entities: [User,UserSessions],
       synchronize: false,
 
     }),

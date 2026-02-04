@@ -19,7 +19,7 @@ app.use(cookieParser());
       resave: false,
       saveUninitialized: false,
       cookie: {
-        maxAge: 10000 , 
+        maxAge: 60000 * 2 , 
         secure: process.env.NODE_ENV === 'production',
       },
     }),

@@ -2,6 +2,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { runSeeders, SeederOptions } from 'typeorm-extension';
 import { config } from "dotenv"
 import { User } from './src/auth/entities/auth.entity';
+import { UserSessions } from './src/chat/entities/chat.entity';
 // import { User } from './src/auth/entities/auth.entity';
 // import { Question } from './src/questions/entities/question.entity';
 // import { Tag } from './src/tags/entities/tag.entity';
@@ -18,7 +19,7 @@ const datasource :DataSourceOptions & SeederOptions={
   username: 'postgres',
   password: 'admin',
   database: 'websocket',
-  entities: [User],
+  entities: [User,UserSessions],
   migrations: ['src/migrations/*.ts'],
   synchronize: false, 
   // factories: [UserFactory],
