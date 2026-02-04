@@ -61,15 +61,14 @@ function Register() {
 
       const firebaseUser = userCredential.user;
 
-      const payload = {
+      const User = {
         username: user.username,
         email: firebaseUser.email,
       };
 
-      await dispatch(registerUser(payload)).unwrap();
-    //   await dispatch(fetchProfile());
+      await dispatch(registerUser(User));
 
-      router.push('/dashboard');
+      router.push('/auth/login');
     } catch (error: any) {
       enqueueSnackbar(error.message, { variant: "error" });
     }

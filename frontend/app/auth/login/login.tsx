@@ -64,13 +64,12 @@ function Login() {
         user.password
       );
 
-      const payload = {
+      const User = {
         email: userCredential.user.email,
         password:'dummy'
       };
 
-      await dispatch(loginUser(payload)).unwrap();
-      // await dispatch(fetchProfile());
+      await dispatch(loginUser(User));
     } catch (error: any) {
       signOut(auth)
       enqueueSnackbar(error.message, { variant: "error" })

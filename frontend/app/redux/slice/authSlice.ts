@@ -27,11 +27,9 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (user: any, { dispatch, rejectWithValue }) => {
-    console.log('in thunk',user)
+  async (user: any, {rejectWithValue }) => {
     try {
-      await apiLogin(user);
-      return dispatch(fetchProfile()).unwrap();
+      return await apiLogin(user);
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
@@ -41,7 +39,6 @@ export const loginUser = createAsyncThunk(
 export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async (user: any, { rejectWithValue }) => {
-    console.log(user)
     try {
       return await apiRegister(user);
     } catch (err: any) {
@@ -77,8 +74,11 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state) => {
+      .addCase(loginUser.fulfilled, (state,action:any) => {
         state.loading = false;
+        state.currentUser = action.payload;
+        state.isLoggedIn = true;
+        state.error=null
       })
       .addCase(loginUser.rejected, (state, action: any) => {
         state.loading = false;
@@ -91,13 +91,13 @@ const authSlice = createSlice({
       })
       .addCase(fetchProfile.fulfilled, (state, action: any) => {
         state.loading = false;
-        state.currentUser = action.payload;
-        state.isLoggedIn = true;
+        state.error = null
       })
-      .addCase(fetchProfile.rejected, (state) => {
+      .addCase(fetchProfile.rejected, (state,action:any) => {
         state.loading = false;
         state.currentUser = null;
         state.isLoggedIn = false;
+        state.error = action.payload
       })
 
       .addCase(registerUser.pending, (state) => {

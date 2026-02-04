@@ -13,7 +13,6 @@ export const apiRegister = async (user: any) => {
 };
 
 export const apiLogin = async (user: any) => {
-  console.log('inapifie',user)
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

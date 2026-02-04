@@ -13,13 +13,10 @@ import { User } from './auth/entities/auth.entity';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: '1104',
+      password: 'admin',
       database: 'websocket',
       entities: [User],
       synchronize: false,
-      //   ssl: {
-      //   rejectUnauthorized: false,
-      // },
 
     }),
     ChatModule, AuthModule],

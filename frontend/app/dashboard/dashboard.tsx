@@ -1,9 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import type { RootState } from '../redux/store'
+import { useDispatch, useSelector } from 'react-redux'
+import type { AppDispatch, RootState } from '../redux/store'
 import { io, Socket } from 'socket.io-client'
+import { apiGetProfile } from '../services/authApi'
+import { fetchProfile, logout } from '../redux/slice/authSlice'
+import { useRouter } from 'next/navigation'
 
 let socket: Socket
 
@@ -11,8 +14,14 @@ function Dashboard() {
   const { currentUser, isLoggedIn } = useSelector(
     (state: RootState) => state.auth
   )
+  const dispatch = useDispatch<AppDispatch>()
+  const router = useRouter()
 
   const [notifications, setNotifications] = useState<string[]>([])
+
+  useEffect(()=>{
+    dispatch(fetchProfile())
+  },[])
 
   useEffect(() => {
     if (!isLoggedIn || !currentUser) return
