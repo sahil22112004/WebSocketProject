@@ -155,7 +155,7 @@ export class ChatGateway
         sessionId: client.id,
       })
 
-      client.emit('login_success')
+      client.emit('login_success',client.id)
       return
     }
 

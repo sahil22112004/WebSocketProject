@@ -6,17 +6,17 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isLoggedIn } = useSelector((state: RootState) => state.auth);
-  const user = useSelector((state: RootState) => state.auth.currentUser);
-  const router = useRouter();
+  // const { isLoggedIn } = useSelector((state: RootState) => state.auth);
+  // const user = useSelector((state: RootState) => state.auth.currentUser);
+  // const router = useRouter();
 
-  useEffect(() => {
-    if (!isLoggedIn || !user) {
-      router.push("/auth/login");
-    }
-  }, [isLoggedIn,user]);
+  // useEffect(() => {
+  //   if (!isLoggedIn || !user) {
+  //     router.push("/auth/login");
+  //   }
+  // }, [isLoggedIn,user]);
 
-  if (!isLoggedIn || !user ) return null;
+  // if (!isLoggedIn || !user ) return null;
 
   return <>{children}</>;
 }
