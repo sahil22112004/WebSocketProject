@@ -14,7 +14,7 @@ import { UserSessions } from './chat/entities/chat.entity';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'admin',
+      password: '1104',
       database: 'websocket',
       entities: [User,UserSessions],
       synchronize: false,

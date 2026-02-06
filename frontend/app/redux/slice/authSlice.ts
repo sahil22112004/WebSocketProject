@@ -9,22 +9,17 @@
 //   id?: number | string;
 //   email: string;
 //   username?: string;
-  
 // }
 
 // interface AuthState {
 //   currentUser: User | null;
-//   otp:string | null
 //   loading: boolean;
 //   error: string | null;
 //   isLoggedIn: boolean;
-//   sessionid?:string |null
 // }
 
 // const initialState: AuthState = {
 //   currentUser: null,
-//   sessionid:null,
-//   otp:null,
 //   loading: false,
 //   error: null,
 //   isLoggedIn: false,
@@ -71,14 +66,7 @@
 //       state.currentUser = null;
 //       state.isLoggedIn = false;
 //       state.error = null;
-//       state.sessionid = null
 //     },
-//     handleseesionId:(state,action)=>{
-//       state.sessionid = action.payload
-//     },
-//     handleseesionIdNull:(state,)=>{
-//       state.sessionid = null
-//     }
 //   },
 //   extraReducers: (builder) => {
 //     builder
@@ -108,8 +96,6 @@
 //       .addCase(fetchProfile.rejected, (state,action:any) => {
 //         state.loading = false;
 //         state.currentUser = null;
-//         state.sessionid = null;
-//         state.otp = null;
 //         state.isLoggedIn = false;
 //         state.error = action.payload
 //       })
@@ -128,12 +114,10 @@
 //   },
 // });
 
-// export const { logout ,handleseesionId,handleseesionIdNull} = authSlice.actions;
+// export const { logout } = authSlice.actions;
 // export default authSlice.reducer;
-
-
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { apiLogin, apiRegister, apiGetProfile } from '../../services/authApi'
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
+import { apiLogin, apiRegister, apiGetProfile } from "../../services/authApi"
 
 export interface User {
   id?: number | string
@@ -143,24 +127,24 @@ export interface User {
 
 interface AuthState {
   currentUser: User | null
-  otp: string | null
   loading: boolean
   error: string | null
   isLoggedIn: boolean
-  sessionid: string | null
+  otp: string | null
+  showCodeInput: boolean
 }
 
 const initialState: AuthState = {
   currentUser: null,
-  sessionid: typeof window !== 'undefined' ? localStorage.getItem('sessionid') : null,
-  otp: typeof window !== 'undefined' ? localStorage.getItem('otp') : null,
   loading: false,
   error: null,
   isLoggedIn: false,
+  otp: null,
+  showCodeInput: false,
 }
 
 export const loginUser = createAsyncThunk(
-  'auth/loginUser',
+  "auth/loginUser",
   async (user: any, { rejectWithValue }) => {
     try {
       return await apiLogin(user)
@@ -171,7 +155,7 @@ export const loginUser = createAsyncThunk(
 )
 
 export const registerUser = createAsyncThunk(
-  'auth/registerUser',
+  "auth/registerUser",
   async (user: any, { rejectWithValue }) => {
     try {
       return await apiRegister(user)
@@ -182,7 +166,7 @@ export const registerUser = createAsyncThunk(
 )
 
 export const fetchProfile = createAsyncThunk(
-  'auth/fetchProfile',
+  "auth/fetchProfile",
   async (_, { rejectWithValue }) => {
     try {
       return await apiGetProfile()
@@ -193,40 +177,27 @@ export const fetchProfile = createAsyncThunk(
 )
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     logout: (state) => {
       state.currentUser = null
       state.isLoggedIn = false
       state.error = null
-      state.sessionid = null
       state.otp = null
-      localStorage.removeItem('sessionid')
-      localStorage.removeItem('otp')
+      state.showCodeInput = false
     },
-
-    handleseesionId: (state, action) => {
-      state.sessionid = action.payload
-      localStorage.setItem('sessionid', action.payload)
-    },
-
-    handleseesionIdNull: (state) => {
-      state.sessionid = null
-      localStorage.removeItem('sessionid')
-    },
-
-    handleOtp: (state, action) => {
+    setOtp: (state, action) => {
       state.otp = action.payload
-      localStorage.setItem('otp', action.payload)
     },
-
-    handleOtpNull: (state) => {
+    setShowCodeInput: (state, action) => {
+      state.showCodeInput = action.payload
+    },
+    clearOtpState: (state) => {
       state.otp = null
-      localStorage.removeItem('otp')
+      state.showCodeInput = false
     },
   },
-
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
@@ -235,7 +206,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action: any) => {
         state.loading = false
-        state.currentUser = action.payload.user
+        state.currentUser = action.payload?.user || action.payload
         state.isLoggedIn = true
         state.error = null
       })
@@ -250,19 +221,13 @@ const authSlice = createSlice({
       })
       .addCase(fetchProfile.fulfilled, (state, action: any) => {
         state.loading = false
-        state.error = null
-        state.currentUser = action.payload.user
+        state.currentUser = action.payload?.user || action.payload
         state.isLoggedIn = true
+        state.error = null
       })
       .addCase(fetchProfile.rejected, (state, action: any) => {
         state.loading = false
-        state.currentUser = null
-        state.sessionid = null
-        state.otp = null
-        state.isLoggedIn = false
         state.error = action.payload
-        localStorage.removeItem('sessionid')
-        localStorage.removeItem('otp')
       })
 
       .addCase(registerUser.pending, (state) => {
@@ -279,13 +244,7 @@ const authSlice = createSlice({
   },
 })
 
-export const {
-  logout,
-  handleseesionId,
-  handleseesionIdNull,
-  handleOtp,
-  handleOtpNull
-} = authSlice.actions
+export const { logout, setOtp, setShowCodeInput, clearOtpState } =
+  authSlice.actions
 
 export default authSlice.reducer
-
